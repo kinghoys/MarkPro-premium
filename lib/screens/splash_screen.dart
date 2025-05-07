@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:markpro_plus/screens/login_screen.dart';
 import 'package:markpro_plus/screens/dashboard_screen.dart';
-import 'package:markpro_plus/services/firebase_config.dart';
 import 'package:markpro_plus/services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:math' show Random, pi, sin, cos;
@@ -171,13 +170,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   Future<void> _initializeAppAndNavigate() async {
     try {
-      // Initialize Firebase - wrapped in try/catch to continue even if it fails
-      try {
-        await initializeFirebase();
-      } catch (e) {
-        print('Firebase init error in splash: $e');
-        // We'll continue even if Firebase fails for development purposes
-      }
+      // Firebase already initialized in main()
       
       // Simulating a delay for splash screen to allow animations to complete
       await Future.delayed(const Duration(seconds: 3));

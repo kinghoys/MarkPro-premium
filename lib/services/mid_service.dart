@@ -1,12 +1,27 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:markpro_plus/models/mid_session.dart';
 
 class MidService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   
-  // Collection reference
-  CollectionReference get _midSessionsCollection => 
-      _firestore.collection('midSessions');
+  // Constants
+  static const String kMidSessionsCollection = 'midSessions';
+  
+  // Get current user ID
+  String? get currentUserId => _auth.currentUser?.uid;
+  
+  // Get reference to user's mid sessions collection
+  CollectionReference get _midSessionsCollection {
+    if (currentUserId == null) {
+      throw Exception('User not authenticated');
+    }
+    return _firestore
+        .collection('users')
+        .doc(currentUserId)
+        .collection(kMidSessionsCollection);
+  }
   
   // Create a new mid session
   Future<String> createMidSession(MidSession midSession) async {

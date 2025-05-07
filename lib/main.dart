@@ -20,9 +20,9 @@ import 'package:markpro_plus/screens/assignment_session_details_screen.dart';
 import 'package:markpro_plus/screens/seminar_sessions_screen.dart';
 import 'package:markpro_plus/screens/create_seminar_session_screen.dart';
 import 'package:markpro_plus/screens/seminar_session_details_screen.dart';
-import 'package:markpro_plus/services/firebase_config.dart';
 import 'package:markpro_plus/services/auth_service.dart';
 import 'package:provider/provider.dart';
+import 'package:markpro_plus/services/firebase_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +31,12 @@ void main() async {
   await dotenv.load(fileName: '.env');
 
   // Initialize Firebase
-  await initializeFirebase();
+  try {
+    await initializeFirebase();
+    print('Firebase initialized successfully');
+  } catch (e) {
+    print('Error initializing Firebase: $e');
+  }
 
   // Create test user
   final authService = AuthService();
@@ -41,19 +46,13 @@ void main() async {
   } catch (e) {
     print('Error creating test user: $e');
   }
+
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  
-  // Initialize Firebase when app starts
-  try {
-    await initializeFirebase();
-  } catch (e) {
-    print('Error in main: $e');
-  }
-  
+
   runApp(const MyApp());
 }
 

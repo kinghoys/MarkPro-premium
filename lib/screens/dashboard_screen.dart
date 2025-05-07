@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' show Random;
+import 'package:markpro_plus/services/auth_service.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -82,6 +83,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProviderStateMixin {
+  final AuthService _authService = AuthService();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late List<Animation<double>> _cardAnimations;
@@ -133,6 +135,46 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     _animationController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+  
+  // Logout function
+  Future<void> _logout(BuildContext context) async {
+    try {
+      // Show a confirmation dialog
+      final shouldLogout = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Logout'),
+            ),
+          ],
+        ),
+      ) ?? false;
+      
+      // If user confirms, log them out
+      if (shouldLogout) {
+        await _authService.signOut();
+        
+        // Navigate to login screen
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error logging out: $e'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -303,6 +345,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                         ),
                       );
                     },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.logout, color: Colors.white),
+                    tooltip: 'Logout',
+                    onPressed: () => _logout(context),
                   ),
                 ],
               ),

@@ -1,33 +1,51 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // TEMPORARY DEVELOPMENT RULES WITH STRUCTURE
-    
-    // Students collection - global array-based structure accessible to all authenticated users
+    // Global collections accessible to all authenticated users
     match /students/{documentId} {
-      // Allow read/write during development
-      allow read, write: if true;
+      // Allow read/write for all authenticated users
+      allow read, write: if request.auth != null;
     }
     
     // Users collection with user-specific data
     match /users/{userId} {
-      // Allow read/write for the user's own data
+      // Allow users to read/write only their own data
       allow read, write: if request.auth != null && request.auth.uid == userId;
       
-      // Subjects subcollection - only accessible by the user who owns it
+      // User's subjects subcollection
       match /subjects/{subjectId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
       
-      // Labs subcollection - only accessible by the user who owns it
-      match /labs/{docId} {
+      // User's labs subcollection
+      match /labs/{labId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // User's mid exam sessions subcollection
+      match /midSessions/{midSessionId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // User's assignment sessions subcollection
+      match /assignmentSessions/{assignmentSessionId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // User's seminar sessions subcollection
+      match /seminarSessions/{seminarSessionId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Allow read/write for any future user subcollections
+      match /{collection}/{docId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
     }
     
-    // Default rules for other collections
+    // Deny access to any other collections by default (security best practice)
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false; // Change to false for production
     }
   }
 }

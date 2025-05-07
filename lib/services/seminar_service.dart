@@ -1,12 +1,27 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:markpro_plus/models/seminar_session.dart';
 
 class SeminarService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   
-  // Collection reference
-  CollectionReference get _seminarSessions => 
-      _firestore.collection('seminarSessions');
+  // Constants
+  static const String kSeminarSessionsCollection = 'seminarSessions';
+  
+  // Get current user ID
+  String? get currentUserId => _auth.currentUser?.uid;
+  
+  // Get reference to user's seminar sessions collection
+  CollectionReference get _seminarSessions {
+    if (currentUserId == null) {
+      throw Exception('User not authenticated');
+    }
+    return _firestore
+        .collection('users')
+        .doc(currentUserId)
+        .collection(kSeminarSessionsCollection);
+  }
       
   // Get all seminar sessions
   Future<List<SeminarSession>> getSeminarSessions() async {
@@ -77,7 +92,7 @@ class SeminarService {
       // Recalculate final marks
       final updatedSession = session.copyWith(
         presentationMarks: updatedMarks,
-        updatedAt: DateTime.now(),
+        // Don't set updatedAt here, server will set it
       );
       updatedSession.calculateFinalMarks();
       
@@ -123,7 +138,7 @@ class SeminarService {
       // Recalculate final marks
       final updatedSession = session.copyWith(
         reportMarks: updatedMarks,
-        updatedAt: DateTime.now(),
+        // Don't set updatedAt here, server will set it
       );
       updatedSession.calculateFinalMarks();
       

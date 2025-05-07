@@ -152,6 +152,45 @@ class _SeminarSessionDetailsScreenState extends State<SeminarSessionDetailsScree
     );
   }
   
+  // Save all marks for all students
+  Future<void> _saveAllMarks() async {
+    if (_students.isEmpty) return;
+    
+    // Show loading indicator
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Saving all marks...'),
+        duration: Duration(milliseconds: 800),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+    
+    try {
+      // Calculate final marks
+      await _seminarService.calculateAndUpdateFinalMarks(seminarSession.id);
+      
+      // Refresh data to show updated marks
+      await _refreshData();
+      
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('All marks saved successfully'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error saving marks: $e'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -179,6 +218,12 @@ class _SeminarSessionDetailsScreenState extends State<SeminarSessionDetailsScree
         ],
       ),
       body: _buildBody(),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _saveAllMarks,
+        icon: const Icon(Icons.save),
+        label: const Text('Save All'),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+      ),
     );
   }
   

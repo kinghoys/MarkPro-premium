@@ -1,19 +1,31 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:markpro_plus/models/assignment_session.dart';
-import 'package:markpro_plus/services/auth_service.dart';
 
 class AssignmentService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final AuthService _authService = AuthService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   
-  // Collection reference
-  CollectionReference get _assignmentSessionsCollection => 
-      _firestore.collection('assignmentSessions');
+  // Constants
+  static const String kAssignmentSessionsCollection = 'assignmentSessions';
+  
+  // Get current user ID
+  String? get currentUserId => _auth.currentUser?.uid;
+  
+  // Get reference to user's assignment sessions collection
+  CollectionReference get _assignmentSessionsCollection {
+    if (currentUserId == null) {
+      throw Exception('User not authenticated');
+    }
+    return _firestore
+        .collection('users')
+        .doc(currentUserId)
+        .collection(kAssignmentSessionsCollection);
+  }
   
   // Get all assignment sessions for the current user
   Future<List<AssignmentSession>> getAssignmentSessions() async {
-    final user = _authService.currentUser;
-    if (user == null) {
+    if (currentUserId == null) {
       throw Exception('User not authenticated');
     }
     
@@ -22,10 +34,9 @@ class AssignmentService {
         .orderBy('updatedAt', descending: true)
         .get();
     
-    // Filter by userId in memory after retrieving the data
+    // No need to filter by userId as we're already in the user's collection
     return querySnapshot.docs
         .map((doc) => AssignmentSession.fromFirestore(doc))
-        .where((session) => session.userId == user.uid)
         .toList();
   }
   
@@ -47,8 +58,7 @@ class AssignmentService {
     required String section,
     required List<String> students,
   }) async {
-    final user = _authService.currentUser;
-    if (user == null) {
+    if (currentUserId == null) {
       throw Exception('User not authenticated');
     }
     
@@ -58,7 +68,7 @@ class AssignmentService {
       year: year,
       section: section,
       students: students,
-      userId: user.uid,
+      userId: currentUserId!,
     );
     
     await _assignmentSessionsCollection
