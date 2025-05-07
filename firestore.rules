@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // TEMPORARY DEVELOPMENT RULES WITH STRUCTURE
+    
+    // Students collection - global array-based structure accessible to all authenticated users
+    match /students/{documentId} {
+      // Allow read/write during development
+      allow read, write: if true;
+    }
+    
+    // Users collection with user-specific data
+    match /users/{userId} {
+      // Allow read/write for the user's own data
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Subjects subcollection - only accessible by the user who owns it
+      match /subjects/{subjectId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // Labs subcollection - only accessible by the user who owns it
+      match /labs/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // Default rules for other collections
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
