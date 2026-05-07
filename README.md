@@ -139,3 +139,14 @@ For any inquiries or support, please contact the development team at development
 </div>
 #
 
+
+
+
+
+## About MarkPro+
+
+MarkPro+ helps educators manage student marks efficiently. Built for teachers by teachers.
+
+## Welcome Contributors
+
+New contributors are always welcome! Star, fork, and send your first PR.
